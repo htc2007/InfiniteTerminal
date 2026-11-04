@@ -1,0 +1,7 @@
+Access your bound chests from anywhere with the Infinite Terminal.
+
+1. Hold the Wireless Terminal Receiver and left-click a nearby chest to bind it (click a bound chest again to unbind). Bind as many chests as you like.
+2. Use the Wireless Terminal to open an aggregated interface: deposit, loot, quick-stack and sort across every bound chest.
+3. While the Wireless Terminal is in your inventory, all ingredients inside bound chests are available for crafting.
+
+Bindings to removed chests are flagged as invalid automatically.

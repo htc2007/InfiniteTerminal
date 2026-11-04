@@ -1,0 +1,44 @@
+Mods: {
+	InfiniteTerminal: {
+		Items: {
+			WirelessTerminal: {
+				$parentVal: 无线终端
+				// DisplayName: Wireless Terminal
+				// Tooltip: ""
+			}
+
+			Receiver: {
+				$parentVal: 无线终端接收器
+				// DisplayName: Receiver
+				// Tooltip: ""
+			}
+		}
+
+		Tooltips: {
+			Terminal: 打开聚合界面，远程访问所有绑定的箱子
+			Receiver: 左键点击附近的箱子以绑定，再次点击可解绑
+			BoundCount: 已绑定箱子数：{0}
+		}
+
+		UI: {
+			Title: 无限终端
+			Close: 关闭
+			LootAll: 全部取出
+			DepositAll: 全部存入
+			QuickStack: 快速堆叠
+			Sort: 整理
+			ChestTitle: 箱子 ({0}, {1})
+			ChestInvalid: 已失效箱子 ({0}, {1})
+		}
+
+		Messages: {
+			NoBinding: 尚未绑定任何箱子，请先用无线终端接收器绑定
+			Bound: 已绑定箱子 ({0}, {1})
+			Unbound: 已解除绑定 ({0}, {1})
+			NotChest: 目标不是箱子
+			OutOfRange: 箱子超出操作范围，请靠近一些
+			NoValidChest: 该处没有有效箱子
+			AllInvalid: 所有绑定的箱子均已失效
+		}
+	}
+}

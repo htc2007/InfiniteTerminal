@@ -1,0 +1,10 @@
+author = Doubao
+displayName = 无限终端 Infinite Terminal
+version = 0.2.0
+homepage = https://github.com/
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, README.md, CHANGELOG.md
+hideCode = false
+hideResources = false
+includeSource = false
+# 仅在客户端与服务端均可加载；本 mod 首版逻辑集中在本地客户端
+side = Both

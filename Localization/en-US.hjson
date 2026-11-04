@@ -1,0 +1,44 @@
+Mods: {
+	InfiniteTerminal: {
+		Items: {
+			WirelessTerminal: {
+				$parentVal: Wireless Terminal
+				DisplayName: Wireless Terminal
+				Tooltip: ""
+			}
+
+			Receiver: {
+				$parentVal: Wireless Terminal Receiver
+				DisplayName: Receiver
+				Tooltip: ""
+			}
+		}
+
+		Tooltips: {
+			Terminal: Opens an aggregated interface to access every bound chest remotely
+			Receiver: Left-click a nearby chest to bind it; click again to unbind
+			BoundCount: Bound chests: {0}
+		}
+
+		UI: {
+			Title: Infinite Terminal
+			Close: Close
+			LootAll: Loot All
+			DepositAll: Deposit All
+			QuickStack: Quick Stack
+			Sort: Sort
+			ChestTitle: Chest ({0}, {1})
+			ChestInvalid: Invalid chest ({0}, {1})
+		}
+
+		Messages: {
+			NoBinding: No chest is bound yet. Use the Wireless Terminal Receiver first.
+			Bound: Bound chest ({0}, {1})
+			Unbound: Unbound chest ({0}, {1})
+			NotChest: Target is not a chest
+			OutOfRange: Chest is out of reach. Move closer.
+			NoValidChest: No valid chest there
+			AllInvalid: Every bound chest is invalid
+		}
+	}
+}
