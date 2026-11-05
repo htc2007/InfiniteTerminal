@@ -1,0 +1,70 @@
+name: 构建 Infinite Terminal
+
+# 触发时机：推送到 main、提交 Pull Request，或在 Actions 页面手动运行
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  # 固定 tModLoader 版本，与本地构建环境保持一致
+  TML_TAG: v2026.09.3.1
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+
+jobs:
+  build:
+    name: 编译并打包 .tmod
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 下载并解压 tModLoader
+        run: |
+          TML_DIR="$RUNNER_TEMP/tml"
+          mkdir -p "$TML_DIR"
+          curl -fSL --retry 3 -o "$RUNNER_TEMP/tml.zip" \
+            "https://github.com/tModLoader/tModLoader/releases/download/$TML_TAG/tModLoader.zip"
+          unzip -q "$RUNNER_TEMP/tml.zip" -d "$TML_DIR"
+          echo "TML_DIR=$TML_DIR" >> "$GITHUB_ENV"
+
+      - name: 配置 Linux 原生库与 targets 桥接
+        run: |
+          # 让打包阶段的 dotnet 子进程能找到 FNA3D / FAudio / SDL2 等原生库
+          sed -i 's|<Exec Command="dotnet |<Exec Command="LD_LIBRARY_PATH=\&quot;$(tMLLibraryPath)/Native/Linux\&quot; dotnet |' \
+            "$TML_DIR/tMLMod.targets"
+
+          # 模组 csproj 通过 ..\tModLoader.targets 引用，这里在 ModSources 根放桥接文件
+          mkdir -p "$RUNNER_TEMP/ModSources"
+          printf '%s\n' \
+            '<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">' \
+            "  <Import Project=\"$TML_DIR/tMLMod.targets\" />" \
+            '</Project>' \
+            > "$RUNNER_TEMP/ModSources/tModLoader.targets"
+
+      - name: 暂存模组并构建
+        run: |
+          NAME="InfiniteTerminal"
+          STAGE="$RUNNER_TEMP/ModSources/$NAME"
+          rm -rf "$STAGE"
+          cp -a "$GITHUB_WORKSPACE" "$STAGE"
+
+          dotnet build "$STAGE/$NAME.csproj" -c Release --nologo \
+            -p:ExtraBuildModFlags="-tmlsavedirectory $RUNNER_TEMP/tmlsave"
+
+      - name: 上传 .tmod 构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: InfiniteTerminal-tmod
+          path: ${{ runner.temp }}/tmlsave/Mods/*.tmod
+          if-no-files-found: error
+          retention-days: 90

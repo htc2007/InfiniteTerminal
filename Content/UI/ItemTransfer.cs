@@ -115,6 +115,8 @@ namespace InfiniteTerminal.Content.UI
                 items[i] = i < occupied.Count ? occupied[i] : new Item();
         }
 
+        private const int NoPlaceable = -1; // createTile/createWall 为 -1 表示不创建任何瓷砖/墙
+
         private static int Category(Item item)
         {
             if (ItemID.Sets.CommonCoin[item.type])
@@ -125,7 +127,7 @@ namespace InfiniteTerminal.Content.UI
                 return 2;
             if (item.consumable || item.buffType > 0 || item.potion || item.healLife > 0 || item.healMana > 0)
                 return 3;
-            if (item.createTile >= 0 || item.createWall >= 0)
+            if (item.createTile != NoPlaceable || item.createWall != NoPlaceable)
                 return 4;
             return 5;
         }
