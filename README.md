@@ -25,7 +25,7 @@
 
 * 正版 Terraria，以及 Steam 上的免费应用 **tModLoader**（AppID 1281930）。
 
-* 本模组面向 tModLoader 2026.08（对应 Terraria 1.4.4.9）构建，首版仅支持单人 / 单机。
+* 本模组面向 tModLoader 2026.09（对应 Terraria 1.4.4.9）构建，首版仅支持单人 / 单机。
 
 ## 使用说明
 
