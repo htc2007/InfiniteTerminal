@@ -95,19 +95,21 @@ namespace InfiniteTerminal.Common
 
         public override void SaveData(TagCompound tag)
         {
-            tag["boundChests"] = boundChests
-                .Select(p => new TagCompound { ["x"] = p.X, ["y"] = p.Y })
-                .ToList();
+            // 用 List<Vector2> 序列化绑定坐标，比嵌套 TagCompound 更稳定，避免重载后数据丢失
+            var list = new List<Vector2>(boundChests.Count);
+            foreach (Point16 p in boundChests)
+                list.Add(new Vector2(p.X, p.Y));
+            tag["boundChests"] = list;
             tag["starterKitGiven"] = starterKitGiven;
         }
 
         public override void LoadData(TagCompound tag)
         {
             boundChests = new List<Point16>();
-            if (tag.TryGet("boundChests", out List<TagCompound> list) && list != null)
+            if (tag.TryGet("boundChests", out List<Vector2> list) && list != null)
             {
-                foreach (TagCompound c in list)
-                    boundChests.Add(new Point16(c.GetInt("x"), c.GetInt("y")));
+                foreach (Vector2 v in list)
+                    boundChests.Add(new Point16((int)v.X, (int)v.Y));
             }
             starterKitGiven = tag.ContainsKey("starterKitGiven") && tag.GetBool("starterKitGiven");
         }

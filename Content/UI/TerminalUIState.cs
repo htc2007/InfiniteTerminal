@@ -10,6 +10,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.UI;
 using InfiniteTerminal.Common;
+using InfiniteTerminal.Content.Items;
 
 namespace InfiniteTerminal.Content.UI
 {
@@ -39,6 +40,10 @@ namespace InfiniteTerminal.Content.UI
             {
                 int chestIndex = Chest.FindChest(pos.X, pos.Y);
                 bool valid = chestIndex >= 0;
+
+                // 每次打开/刷新界面时，对有效箱子先排序，让物品集中在前部槽位可见
+                if (valid)
+                    ItemTransfer.SortChestItems(Main.chest[chestIndex].item, Chest.maxItems);
 
                 string title;
                 if (valid)
@@ -110,8 +115,8 @@ namespace InfiniteTerminal.Content.UI
             Action[] actions = { LootAll, DepositAll, QuickStack, SortChests };
             for (int i = 0; i < 4; i++)
             {
-                var button = MakeButton(buttonKeys[i], 104f);
-                button.Left.Set(8f + i * 112f, 0f);
+                var button = MakeButton(buttonKeys[i], 100f);
+                button.Left.Set(8f + i * 110f, 0f);
                 button.Top.Set(34f, 0f);
                 int captured = i;
                 button.OnLeftClick += (evt, el) =>
@@ -125,19 +130,19 @@ namespace InfiniteTerminal.Content.UI
             _viewport = new ScrollViewport();
             _viewport.Left.Set(8f, 0f);
             _viewport.Top.Set(70f, 0f);
-            _viewport.Width.Set(440f, 0f);
-            _viewport.Height.Set(340f, 0f);
+            _viewport.Width.Set(410f, 0f);
+            _viewport.Height.Set(330f, 0f);
             _panel.Append(_viewport);
 
             _content = new UIElement();
-            _content.Width.Set(420f, 0f);
+            _content.Width.Set(390f, 0f);
             _content.Left.Set(0f, 0f);
             _content.Top.Set(0f, 0f);
             _viewport.Append(_content);
 
             _scrollbar = new UIScrollbar();
             _scrollbar.Width.Set(20f, 0f);
-            _scrollbar.Height.Set(340f, 0f);
+            _scrollbar.Height.Set(330f, 0f);
             _scrollbar.HAlign = 1f;
             _scrollbar.Top.Set(70f, 0f);
             _panel.Append(_scrollbar);
@@ -171,7 +176,7 @@ namespace InfiniteTerminal.Content.UI
         {
             var button = new UITextPanel<string>(
                 Language.GetTextValue("Mods.InfiniteTerminal." + localizationKey),
-                0.7f, true);
+                0.55f, true);
             button.Width.Set(width, 0f);
             button.Height.Set(30f, 0f);
             button.PaddingTop = 6f;
@@ -193,9 +198,23 @@ namespace InfiniteTerminal.Content.UI
                         ItemTransfer.Deposit(it, Main.LocalPlayer.inventory, 50);
                 }
             }
+            BuildContents();
         }
 
-        /// <summary>全部存入：把背包中未收藏的物品移入绑定箱子（钱币/弹药栏不动）。</summary>
+        /// <summary>
+        /// 判断背包槽位是否应跳过存入操作：
+        /// 已收藏、无线终端、无线终端接收器本身，永不存入箱子；其余槽位（含快捷栏）均可存入。
+        /// </summary>
+        private static bool ShouldSkipDeposit(int slot, Item it)
+        {
+            if (it == null || it.IsAir) return true;
+            if (it.favorited) return true;               // 已收藏永不存入
+            if (it.type == ModContent.ItemType<WirelessTerminal>()) return true;
+            if (it.type == ModContent.ItemType<Receiver>()) return true;
+            return false;
+        }
+
+        /// <summary>全部存入：把背包中可存入的物品移入绑定箱子（收藏/终端/接收器不动，钱币弹药不动）。</summary>
         private void DepositAll()
         {
             var modPlayer = Main.LocalPlayer.GetModPlayer<InfiniteTerminalPlayer>();
@@ -205,7 +224,7 @@ namespace InfiniteTerminal.Content.UI
             for (int s = 0; s < 50; s++)
             {
                 Item it = player.inventory[s];
-                if (it == null || it.IsAir || it.favorited)
+                if (ShouldSkipDeposit(s, it))
                     continue;
 
                 foreach (int chestIndex in valid)
@@ -215,9 +234,10 @@ namespace InfiniteTerminal.Content.UI
                     ItemTransfer.Deposit(it, Main.chest[chestIndex].item, Chest.maxItems);
                 }
             }
+            BuildContents();
         }
 
-        /// <summary>快速堆叠：仅把箱子中已有同类的物品存入。</summary>
+        /// <summary>快速堆叠：仅把箱子中已有同类的物品存入（跳过收藏/终端/接收器）。</summary>
         private void QuickStack()
         {
             var modPlayer = Main.LocalPlayer.GetModPlayer<InfiniteTerminalPlayer>();
@@ -227,7 +247,7 @@ namespace InfiniteTerminal.Content.UI
             for (int s = 0; s < 50; s++)
             {
                 Item it = player.inventory[s];
-                if (it == null || it.IsAir || it.favorited)
+                if (ShouldSkipDeposit(s, it))
                     continue;
 
                 foreach (int chestIndex in valid)
@@ -237,14 +257,16 @@ namespace InfiniteTerminal.Content.UI
                     ItemTransfer.QuickStack(it, Main.chest[chestIndex].item, Chest.maxItems);
                 }
             }
+            BuildContents();
         }
 
-                /// <summary>整理：对每个绑定箱子分别执行排序。</summary>
+        /// <summary>整理：对每个绑定箱子分别执行排序，并刷新界面。</summary>
         private void SortChests()
         {
             var modPlayer = Main.LocalPlayer.GetModPlayer<InfiniteTerminalPlayer>();
             foreach (int chestIndex in modPlayer.EnumerateValidChestIndices())
                 ItemTransfer.SortChestItems(Main.chest[chestIndex].item, Chest.maxItems);
+            BuildContents();
         }
     }
 }
