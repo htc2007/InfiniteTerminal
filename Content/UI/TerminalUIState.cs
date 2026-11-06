@@ -115,8 +115,8 @@ namespace InfiniteTerminal.Content.UI
             Action[] actions = { LootAll, DepositAll, QuickStack, SortChests };
             for (int i = 0; i < 4; i++)
             {
-                var button = MakeButton(buttonKeys[i], 100f);
-                button.Left.Set(8f + i * 110f, 0f);
+                var button = MakeButton(buttonKeys[i], 95f);
+                button.Left.Set(8f + i * 107f, 0f);
                 button.Top.Set(34f, 0f);
                 int captured = i;
                 button.OnLeftClick += (evt, el) =>
@@ -176,7 +176,7 @@ namespace InfiniteTerminal.Content.UI
         {
             var button = new UITextPanel<string>(
                 Language.GetTextValue("Mods.InfiniteTerminal." + localizationKey),
-                0.55f, true);
+                0.45f, true);
             button.Width.Set(width, 0f);
             button.Height.Set(30f, 0f);
             button.PaddingTop = 6f;
@@ -184,10 +184,11 @@ namespace InfiniteTerminal.Content.UI
             return button;
         }
 
-        /// <summary>全部取出：把所有绑定箱子中的物品移入玩家主库存（不写入钱币/弹药栏）。</summary>
+        /// <summary>全部取出：把所有绑定箱子中的物品移入玩家主背包（slot 10-49，不碰快捷栏 0-9、钱币、弹药）。</summary>
         private void LootAll()
         {
             var modPlayer = Main.LocalPlayer.GetModPlayer<InfiniteTerminalPlayer>();
+            Player player = Main.LocalPlayer;
             foreach (int chestIndex in modPlayer.EnumerateValidChestIndices())
             {
                 Item[] items = Main.chest[chestIndex].item;
@@ -195,19 +196,51 @@ namespace InfiniteTerminal.Content.UI
                 {
                     Item it = items[s];
                     if (it != null && !it.IsAir)
-                        ItemTransfer.Deposit(it, Main.LocalPlayer.inventory, 50);
+                        DepositToMainInventory(it, player);
                 }
             }
             BuildContents();
         }
 
+        /// <summary>把物品堆叠/放入玩家主背包 slot 10-49，绝不写入快捷栏 0-9。背包满则物品留在原地。</summary>
+        private static void DepositToMainInventory(Item source, Player player)
+        {
+            if (source == null || source.IsAir) return;
+
+            // 第一遍：堆叠到主背包已有同类槽
+            for (int i = 10; i < 50 && source.stack > 0; i++)
+            {
+                Item d = player.inventory[i];
+                if (d == null || d.IsAir) continue;
+                if (!ItemLoader.CanStack(d, source)) continue;
+                int space = d.maxStack - d.stack;
+                int take = Math.Min(space, source.stack);
+                if (take <= 0) continue;
+                d.stack += take;
+                source.stack -= take;
+            }
+
+            // 第二遍：放入主背包空槽
+            for (int i = 10; i < 50 && source.stack > 0; i++)
+            {
+                if (player.inventory[i] != null && !player.inventory[i].IsAir) continue;
+                int take = Math.Min(source.maxStack, source.stack);
+                Item placed = source.Clone();
+                placed.stack = take;
+                player.inventory[i] = placed;
+                source.stack -= take;
+                if (source.stack <= 0) source.TurnToAir();
+            }
+        }
+
         /// <summary>
         /// 判断背包槽位是否应跳过存入操作：
-        /// 已收藏、无线终端、无线终端接收器本身，永不存入箱子；其余槽位（含快捷栏）均可存入。
+        /// 快捷栏 0-9、已收藏、无线终端、无线终端接收器本身，永不存入箱子。
         /// </summary>
         private static bool ShouldSkipDeposit(int slot, Item it)
         {
             if (it == null || it.IsAir) return true;
+            if (slot < 10) return true;                 // 快捷栏永不存入
             if (it.favorited) return true;               // 已收藏永不存入
             if (it.type == ModContent.ItemType<WirelessTerminal>()) return true;
             if (it.type == ModContent.ItemType<Receiver>()) return true;

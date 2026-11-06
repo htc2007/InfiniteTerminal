@@ -48,6 +48,13 @@ namespace InfiniteTerminal.Common
                 }
                 else
                 {
+                    // 物品栏快捷键（默认 Esc）按下边沿时关闭界面
+                    if (Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Escape)
+                        && !Main.oldKeyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Escape))
+                    {
+                        HideUI();
+                        return;
+                    }
                     _userInterface.Update(gameTime);
                 }
             }
