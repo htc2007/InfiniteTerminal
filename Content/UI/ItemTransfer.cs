@@ -13,7 +13,7 @@ namespace InfiniteTerminal.Content.UI
     {
         /// <summary>
         /// 把 source 中的物品尽可能移入 dest：先堆叠到同类槽，再放入空槽。
-        /// 返回实际移动的数量。
+        /// 背包/箱子满时剩余物品留在 source，绝不丢失。
         /// </summary>
         public static int Deposit(Item source, Item[] dest, int destLen)
         {
@@ -28,7 +28,9 @@ namespace InfiniteTerminal.Content.UI
                 Item d = dest[i];
                 if (d == null || d.IsAir)
                     continue;
-                if (!ItemLoader.CanStack(d, source))
+                if (d.type != source.type)
+                    continue;
+                if (d.maxStack <= d.stack)
                     continue;
 
                 int space = d.maxStack - d.stack;
@@ -41,22 +43,24 @@ namespace InfiniteTerminal.Content.UI
                 moved += take;
             }
 
-            // 第二遍：放入空槽
+            // 第二遍：放入空槽（用 SetDefaults 重新创建，避免 Clone 复制错误状态）
             for (int i = 0; i < destLen && source.stack > 0; i++)
             {
                 if (dest[i] != null && !dest[i].IsAir)
                     continue;
 
                 int take = Math.Min(source.maxStack, source.stack);
-                Item placed = source.Clone();
+                Item placed = new Item();
+                placed.SetDefaults(source.type);
                 placed.stack = take;
+                placed.prefix = source.prefix;
                 dest[i] = placed;
                 source.stack -= take;
                 moved += take;
-
-                if (source.stack <= 0)
-                    source.TurnToAir();
             }
+
+            if (source.stack <= 0)
+                source.TurnToAir();
 
             return moved;
         }
