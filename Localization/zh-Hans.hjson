@@ -27,6 +27,7 @@ Mods: {
 			DepositAll: 全部存入
 			QuickStack: 快速堆叠
 			Sort: 整理
+			Zoom: 放大
 			ChestTitle: 箱子 ({0}, {1})
 			ChestInvalid: 已失效箱子 ({0}, {1})
 		}

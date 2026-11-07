@@ -27,6 +27,7 @@ Mods: {
 			DepositAll: Deposit All
 			QuickStack: Quick Stack
 			Sort: Sort
+			Zoom: Zoom
 			ChestTitle: Chest ({0}, {1})
 			ChestInvalid: Invalid chest ({0}, {1})
 		}

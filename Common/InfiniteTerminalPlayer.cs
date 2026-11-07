@@ -20,10 +20,26 @@ namespace InfiniteTerminal.Common
         /// <summary>是否已发放过开局物品；持久化，保证整套只发一次。</summary>
         public bool starterKitGiven = false;
 
+        /// <summary>终端面板位置（像素），-1 表示未设置用默认位置。</summary>
+        public float panelX = -1f;
+        public float panelY = -1f;
+
+        /// <summary>终端面板大小（像素），-1 表示用默认大小。</summary>
+        public float panelW = -1f;
+        public float panelH = -1f;
+
+        /// <summary>格子显示倍率，默认 1.0。</summary>
+        public float panelZoom = 1.0f;
+
         public override void Initialize()
         {
             boundChests = new List<Point16>();
             starterKitGiven = false;
+            panelX = -1f;
+            panelY = -1f;
+            panelW = -1f;
+            panelH = -1f;
+            panelZoom = 1.0f;
         }
 
         public override void OnEnterWorld()
@@ -101,6 +117,11 @@ namespace InfiniteTerminal.Common
                 list.Add(new Vector2(p.X, p.Y));
             tag["boundChests"] = list;
             tag["starterKitGiven"] = starterKitGiven;
+            tag["panelX"] = panelX;
+            tag["panelY"] = panelY;
+            tag["panelW"] = panelW;
+            tag["panelH"] = panelH;
+            tag["panelZoom"] = panelZoom;
         }
 
         public override void LoadData(TagCompound tag)
@@ -112,6 +133,11 @@ namespace InfiniteTerminal.Common
                     boundChests.Add(new Point16((int)v.X, (int)v.Y));
             }
             starterKitGiven = tag.ContainsKey("starterKitGiven") && tag.GetBool("starterKitGiven");
+            panelX = tag.ContainsKey("panelX") ? tag.GetFloat("panelX") : -1f;
+            panelY = tag.ContainsKey("panelY") ? tag.GetFloat("panelY") : -1f;
+            panelW = tag.ContainsKey("panelW") ? tag.GetFloat("panelW") : -1f;
+            panelH = tag.ContainsKey("panelH") ? tag.GetFloat("panelH") : -1f;
+            panelZoom = tag.ContainsKey("panelZoom") ? tag.GetFloat("panelZoom") : 1.0f;
         }
 
         /// <summary>

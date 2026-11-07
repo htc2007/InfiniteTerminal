@@ -14,14 +14,14 @@ namespace InfiniteTerminal.Content.UI
         private readonly int _slot;
         private readonly int _context;
 
-        public InventorySlotElement(int slot)
+        public InventorySlotElement(int slot, float size = 42f)
         {
             _slot = slot;
             _context = slot < 50 ? ItemSlot.Context.InventoryItem
                 : slot < 54 ? ItemSlot.Context.InventoryCoin
                 : ItemSlot.Context.InventoryAmmo;
-            Width.Set(42f, 0f);
-            Height.Set(42f, 0f);
+            Width.Set(size, 0f);
+            Height.Set(size, 0f);
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)

@@ -1,6 +1,6 @@
 author = Doubao
 displayName = 无限终端 Infinite Terminal
-version = 0.3.3
+version = 0.3.4
 homepage = https://github.com/
 buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, README.md, CHANGELOG.md
 hideCode = false

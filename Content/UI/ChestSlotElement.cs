@@ -17,12 +17,12 @@ namespace InfiniteTerminal.Content.UI
         private readonly int _slot;
         private static Item _emptyPlaceholder;
 
-        public ChestSlotElement(Point16 chestPos, int slot)
+        public ChestSlotElement(Point16 chestPos, int slot, float size = 42f)
         {
             _chestPos = chestPos;
             _slot = slot;
-            Width.Set(42f, 0f);
-            Height.Set(42f, 0f);
+            Width.Set(size, 0f);
+            Height.Set(size, 0f);
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)

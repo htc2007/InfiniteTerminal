@@ -15,6 +15,8 @@ namespace InfiniteTerminal.Common
     {
         private UserInterface _userInterface;
         private TerminalUIState _state;
+        private bool _manualClosed;
+        private bool _lastInventoryOpen;
 
         public bool IsOpen => _userInterface?.CurrentState != null;
 
@@ -29,6 +31,7 @@ namespace InfiniteTerminal.Common
             _state.Activate();
             _state.BuildContents();
             _userInterface.SetState(_state);
+            _manualClosed = false;
         }
 
         public void HideUI()
@@ -37,27 +40,46 @@ namespace InfiniteTerminal.Common
             _state = null;
         }
 
+        /// <summary>点击关闭按钮：暂时关闭面板，重新打开物品栏或点击终端可恢复。</summary>
+        public void ManualClose()
+        {
+            _manualClosed = true;
+            HideUI();
+        }
+
         public override void UpdateUI(GameTime gameTime)
         {
-            if (IsOpen)
+            Player player = Main.LocalPlayer;
+            if (player.dead || !player.active)
             {
-                Player player = Main.LocalPlayer;
-                if (player.dead || !player.active)
-                {
-                    HideUI();
-                }
-                else
-                {
-                    // 物品栏快捷键（默认 Esc）按下边沿时关闭界面
-                    if (Main.keyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Escape)
-                        && !Main.oldKeyState.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Escape))
-                    {
-                        HideUI();
-                        return;
-                    }
-                    _userInterface.Update(gameTime);
-                }
+                if (IsOpen) HideUI();
+                _lastInventoryOpen = Main.playerInventory;
+                return;
             }
+
+            var modPlayer = player.GetModPlayer<InfiniteTerminalPlayer>();
+
+            // 检测物品栏从关闭→打开的边沿：重置手动关闭标志
+            if (Main.playerInventory && !_lastInventoryOpen)
+            {
+                _manualClosed = false;
+            }
+            _lastInventoryOpen = Main.playerInventory;
+
+            // 打开背包时：若背包内有无线终端且有有效绑定箱子，且未被手动关闭，自动弹出
+            if (Main.playerInventory && !IsOpen && !_manualClosed)
+            {
+                if (modPlayer.HasTerminalInInventory() && modPlayer.HasAnyValidChest)
+                    ShowUI();
+            }
+            // 关闭背包时：自动关闭终端界面
+            else if (!Main.playerInventory && IsOpen)
+            {
+                HideUI();
+            }
+
+            if (IsOpen)
+                _userInterface.Update(gameTime);
         }
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -81,6 +103,8 @@ namespace InfiniteTerminal.Common
         {
             if (IsOpen)
                 HideUI();
+            _manualClosed = false;
+            _lastInventoryOpen = false;
         }
 
         public override void PreSaveAndQuit()
